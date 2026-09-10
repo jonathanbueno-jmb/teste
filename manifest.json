@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "Dashboard Rodobras",
   "short_name": "Rodobras",
@@ -9,3 +10,4 @@
     { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230057B7'/><text y='140' x='96' text-anchor='middle' font-size='130' fill='%23FFB400' font-family='Arial' font-weight='bold'>R</text></svg>", "sizes":"192x192", "type":"image/svg+xml" }
   ]
 }
+>>>>>>> 9d99e5e287a58eda86f802762a3604e7dbabc1b2
