@@ -1812,8 +1812,7 @@ body.dark #ia-messages::-webkit-scrollbar-thumb{ background:rgba(127,179,255,.25
   </div>
   <div class="top-actions">
     <span class="status-pill" id="recCount" title="Total de registros e data/hora da última importação"><span class="dot"></span> 446.002 registros</span>
-    <input type="file" id="fileInput" accept=".xlsb,.xlsx,.xls,.json,application/json" style="display:none">
-window.RodoWorker = {
+    <input type="file" id="fileInput" window.RodoWorker = {
   _worker: null,
   iniciar(buffer, nomeArquivo, onProgresso, onConcluido, onErro) {
     if (this._worker) this._worker.terminate();
@@ -1833,6 +1832,8 @@ window.RodoWorker = {
   },
   cancelar() { if (this._worker) { this._worker.terminate(); this._worker = null; } }
 };
+ accept=".xlsb,.xlsx,.xls,.json,application/json" style="display:none">
+
 <button class="btn ghost" onclick="window.RodoPDF?.gerar()" title="Gerar relatório PDF com análise de IA">📄 PDF IA</button>
 
     <button class="btn ghost" id="exportBtn" title="Exportar relatório (Excel, PDF ou JSON)">Exportar</button>
