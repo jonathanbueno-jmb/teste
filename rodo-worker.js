@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // rodo-worker.js — roda em thread separada, não trava a interface
 importScripts('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
 importScripts('https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js');
@@ -34,3 +35,5 @@ self.onmessage = function(e) {
     self.postMessage({ tipo: 'ERRO', msg: err.message });
   }
 };
+ 
+>>>>>>> 9d99e5e287a58eda86f802762a3604e7dbabc1b2
