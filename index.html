@@ -1,5 +1,33 @@
 <!DOCTYPE html>
-<!-- Dashboard Rodobras v49.24 - Alterações v49.23→v49.24 (GERAL):
+<!-- Dashboard Rodobras v49.26 - Alterações v49.25→v49.26 (CORREÇÃO):
+     A subtela "🔐 Trilha de Auditoria" não fechava ao clicar no ✕:
+     o seletor this.closest('[style]') removia a CAIXA DE CONTEÚDO
+     (primeiro ancestral com atributo style) e deixava o fundo escuro
+     (backdrop) cobrindo a tela para sempre. Agora o modal tem id
+     próprio (audit-modal-bk), o ✕ remove o modal INTEIRO, e clicar
+     no fundo escuro também fecha. Além disso, abrir de novo remove
+     qualquer instância anterior (sem modais empilhados).
+
+     Histórico anterior (v49.24→v49.25 INTELIGÊNCIA E RECURSOS):
+     Pacote de aprimoramentos:
+     1) PWA: manifest.json + service-worker + theme-color (instalável).
+     2) Botão '📄 PDF IA' no topo (window.RodoPDF.gerar) e '🔐
+        Trilha de Auditoria' no drawer (window.RodoGov.verLog).
+     3) Módulos JS window.Rodo*:
+        - RodoHistoricoKPI: guarda KPIs entre importações.
+        - RodoWorker: wrapper de Web Worker para processar planilhas.
+        - RodoNL2Filtros: linguagem natural -> filtros da tela.
+        - RodoExplicabilidade: botões '?' ao lado dos KPIs.
+        - RodoPainelIA: botão 🤖 nos gráficos.
+        - RodoPDF: relatório PDF com análise executiva (Gemini).
+        - RodoDrillDown: modal de detalhes + export CSV + IA.
+        - RodoGov: trilha de auditoria + auto-logout por inatividade.
+     4) Alerta de arquivo mais novo no topo (banner) + auto-análise
+        proativa ao trocar filtros com o painel IA aberto.
+     5) Historico KPI gravado automáticamente ao concluir uma
+        importação + banner de 'nova versão' é dispensado.
+
+     Histórico anterior (v49.23→v49.24 GERAL):
      CORREÇÃO da data do arquivo exibida na tag de registros: o
      cabeçalho HTTP Last-Modified NÃO é confiável em hospedagem
      estática (GitHub Pages etc.) — ele informa a data do deploy do
@@ -122,6 +150,7 @@
 		f.parentNode.insertBefore(j,f);
 		})(window,document,'script','dataLayer');</script>
 <meta charset="UTF-8">
+<!-- v49.25: PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#003B7A">
 <meta name="mobile-web-app-capable" content="yes">
@@ -130,9 +159,8 @@
     window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW:', e)));
   }
 </script>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard de Nível de Serviço • Análise de Entregas (v49.24)</title>
+<title>Dashboard de Nível de Serviço • Análise de Entregas (v49.26)</title>
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAVu0lEQVR4nIV623LkSI4lbk5GhO6Xqqya6Zfdfd2/2P//hLUxm54Zq8rKVOoSoSDpDpx9gJNSTrfZUmbKNEWQdIcDBwcH4F/+9/9REVU1K6WYiLj7NE3v0/u8LEBYsf1+N4yDmQFo3mpt1VvzFhQAQB4gpiAIK4sIC7MIgAAQERFEpKosLKLMzBHhhIAAoqoiwgICnMIRAIGERURMVVWLmogysbvXWltt1Wt4eIQxbRcAEJD/0KcrIiLC3fuXACJiZiYmIiD/J8TMzEzEzOsXiEWIiHj9ECCifA8REX+8n4lByLtofUi+LiKImIn7XdvziIx+voJ+XvvPq0/bfd4eMwsLiJhAxCzbAoiJRCR/bzbKB1KAiOkfLhFZ90cMTqtGRBATMYMD/Ty37xuvRgAQCA7Kk/90LOHu3BgAM6fb9KWTgMAk1J/CJER9bczMkjsgJqJARHgEEIFcEfFPJ5CHJ5wbIOSSwBEtIII8gbyYWZhBZHkXEYEQAebwiCCAiJkBikBrDYSIYGYWzhUKM5hWZ1odigkBIgAkzBldzAyCu1dEHiiBiCSPK9fdtyDCYCZCAAEiyhAKYnGkWTbzkQgTmYgQM3E/AYAiom9RhEg8PCLQEBEiIiqimi9GP2wSYRZhJhCCgAgiMJFyD9F05G4kjwwNEREW2XwOyFWB+pPdHdF/hDKg5KetM/cNYPVOpI+me5m6I20f3j1HVPremPoGiISpbwBBBF/jlAAGeMMGj4hAhIhqIowoJyisvpGOlQ9f/SINy/l3YaE1rpjZRBXd1xEZ8ggiVlVd7dPcPZyYRPIMVFWQbo017DNsQAQkuvbQZxLmAFqt3hrcV+tYsaIiCLh3t41gpg0GkIGQnrmFFjGzCEuiHZuoJO5ugJX+o6rMwiE9SJxYeF29iiRsJ2aAAgQQcyQAoAegoyGcKAOpemsAEt2LWjFTFmcPd0REgJkQJELMHAAlqrJwOhCLsKQLEEueiLEqR1D00MsNZOStLpqRSsSUSxcR6S8gCiAiGGm6brU0GRDu4bSdBiKYWUVN1cxMNHF5A2tCQAigDJtcszCYeAV+YeHEvTxxS2dyAnl/Sp4A0RqpEBERyJaMtpjrEBEBBDM4rZKvYAUhYTvcPR9LnK5vYpl9Eywzxpo3AouQ2QbDzMjM0jcA6vGR4QEiYxUmcDCIAnD3QBCRh4j8hNMfiQEfAYOIjDJhIglhVcm1MYLCvbn7lmWJ1bRYMVMV4dXw4d6/CCZiD+WOFJxxtwVGxGe+ACIyYQGDuNOEBE1iUu93blktgzMi2J2YIxyZMNAjOP1IRc1MVYnI3bW11sSlJ3JTMzMVZaJAuHtrzVtLdAKYBbolynRiEWbpNqeAbxYMAhlnQuKOXAF4BAd7hEQoy6esTPiUx9Ox0V+MoGRgQYEMMSYGk3AICwmYmEVUVZgp4PAAWm1eW6Y27h7fk2JPjUwfPrv+ztXnWv47F/rsJgHIJ2NsMJV3rg+JCPdwpOO5ZxINMxYOj9Zqay0AYRbVJBUgXyM73J0AVVVRyh2KdvoEIMjh1FnjGnf0QYdsJY1bhH4Eam68p4xMZytFXjnruoHW3FtEVJVqS10GM2Pm8C0KSFTNNMyYBWuiCBAzKYuYCgsldlPmVsrQ33LMto08hw82mimiky9VrOxmRQJiFXBHxv7eQLIxYUneCADu7h7N0bwlBQqEeyCYWYtJz0MRAXcHQCRmaqZWBjNjURAnY2oR4cn5IxJSSXhlET2dEdnGy9f1K237ofUTIogQwBE9GQqpqKmICAGtDUurtVaEd34iklyQVCNTb1G1kq7Yqgc8IpiISIV7YhbVALkDRLzhk2e+Z2YRCImKfKzwIwa4p6iPqE12/SmKSIghIsyqOg7DftwN46AqCG/eamsR3hNHrwy45zXpGTSApdbpfXo/n5dlQYCiJ2/u50Mrr/1EcjsxWh2XmNdbDLTVV8yiorEy0s5NAdZkrETMpCIqOo7D1eXl9fX11eXlbjeqCBjhEXAhkiQrmdHWOguE5jHP8+n99Pr89vzyfDqdlqWCEO6tNibRAJgjibOwqCgb9SqqOwQoKWOSB7LAavHMfCIsHCAEiCOCIIzEvjwnlcHK4XC4ub5+fHx8uL+/vLrc70Y1TVtJf0yiTjoSAPLwaZ5Px+Pzy+v3/fdSiqmdTqd5mRFoyxIBUWFWEs21mJooVBXJcrccEMBK2i02FN/2wNJTXgRvUS+Sxkz/KVZ2u93l5eXNzfXt7e3lxcW4G1U6TeEtokxVlJiJ0Jqfz+e3t7eLi+ehDKKqqmZ2PB6neXZ3XxZiFjVWM7M0pSaLIQ5QeBDC3QHvUEiw9qlUx+rpJLwVdVuFwGsWSfbrPb7WCjPdsFdF2ApiHbSoiupg6AUmZdVGqlpKMbPXt7fz+bzUBB4IKGFXVAhbqUlMItGXyqmDEFnzRmuVjs4AO4WFANHZUMInJRwQ2bsdx+H5+bmohPt8Po/jKMLRWquttoqAiIy78eJwcTgcxt1oannyYxlurq+Z2cxKGUwtlYvAea410xsRCcDB3IsS+ShfRYSIKdEG1pqvSbpXxtQRVhFEDCZsVb97g4fXBgchovk8nV9fXg77wzAUIrRlmaZ5nib3xqz7/e766vrm9uby8nK/P5ShmIqo7sdRzYZxHMZRVQJordXm1ZNMRiNiBDOzM6tyRxEmFhJW0cxdYDIPX2WQD5q87qHnYFrrhEj+Fc2bt1bn83Q8vj7vD/vdrgxFiFqt0zTP07m1SuAyDNeXV9e3N9dXV1dXV4fLi8uLi8urq4urq+uLw+FwMQwjAufz9HZ8O57eRSR6nbH6LbgLTyLMwpqESaiXteiZeF14d6YVhmWtTpFxnMQ2CK0197ZM0/v76TiOh/1+v98NZsLsHkzE4Na81fe21Pf308t+f3l1dX1z/XD/IKqXV1cXhwtRs1Lmafr2/buZrS6cGp70ajjxJlFfKCHuw5WYrGtJeXOsghkhmSD13yTMpMpEYInmrbp7q14RLqBidtjv9rv9xWE/DKOqePPz+Xw6Hs/naZqmaZqnaap1MbPrmxtm3u92427PLM+HH2aKiNZauDOLmZlZcEeLALzX7JE4GSHCWz1gtlEcsCNS9Uu5Cl09TOLBbCJsBS2a1FoFaKo6juPFxcX97d0vj48PDw+3Nzf7/Q6O19fXv/766+vXr08/fmTenc/zMi+tNQKExdRMlYm8+bIsy7K4uxUtZsM4Qqg1b8kFUxJLv3Im+OoqbD1NRDCBgntJTggKXTO5MDOImQQkxCRhosWMGcMwXF1ePj48/Pbbl3/57bcvX748PjxcXlwg8PLycnN9vdvthmF4fn0Nb+M45utqa8u8sOh0Pp/P52k6z9NUa3V3LSQipRRSVnV1ba1Ra/DmjqyzaRUhOu/qh7HWKp1jyYfpk54DkOh1iRQZSxkGO1xc3N3e/vrL4+9fvnz59cvj4+Ptzc1+twsPZg53FjkcDi+vr8syE/Hh8kJV52l+fn7W0+nt9fXp6el4PC7LEt7r/0R6ZZWSApKQCBZyr6kObo7NzD8VNF0TXLlTpoOuohAlMYa7gExtN47X11d393ePDw+//vLLr48PNzc3QynLsizz7M1rrUMZfvvy5eHhYV6WaTpP01zdReV8nuryrYa/vr5+/fPr29tbay15ckTUulgtrGLFUsQh5ubO3FY+J1jNbn3RWGvlnhGYmHgtSVWVgV6/LlWIdSe73e7+/u7333//8uXXXx4fb6+uSimttteX1+PxbZ5nE72+un54fLi5uSnjUJfl5fXt6fnH69vb8Xh6Ov14e3t7eXn5/uPp7e0tADNzUETMy0KiJCwqVooIe0BFmVcysOIVEdl2ZBsjwFbLfBSnDES411qXeTaR3W632+/u7+5/++33f/3X3x/uHw67sdb6/PT0/Pz8559/HI/H3bj7/be4f3i4ub29f7gXkdfXtz++/vmf//Vfp9P7y8vLH3/88f3p6Xg6zXUmojIMQTwvtdZKLKJiRUVTodjIvkRXfTp0djKHNQBYhAHZRP1OISjCW2vLsiy1spmoHg6H27u7X798+f333+/v7wa14/F4fH1trZ1Op+eX56JlHMaHx8cv0ySq11f7w+GgxZr709OPWuvTjx9fv36d5llMyjgOwwCS5tFaq7XqrGoKYjEN73KtqlJErr8X9dsJZMLrRGhtkESA0EIkvC21ttbcnUqxYrv9/vL6+vb29v7+/v7uTpmZ6eXiYr/fD+MoLPMyf3v6vvv734dxEFP529+ur8aHx4dpnv/4408rNs/z2/G41GV32I/7fRkGEm3uFYjAsixgaq1pMWYJkKoSE3svVtL01oUSdPU9CSMTUnB3hCdEeau1NncisGopZRiHcbfb7Xe7/X633yvTUpeLy4vr25u7u7vz+fz8/Pzjx49pmo7vx/fze/P2P//H/7q4sru727v7u4uLCzNNhZhWuZdYavMasdTm7m06L8uspVgpVoqIsgizt9Zi1RFtq/g7baU172bh4BHhBIS31lqiWBJ5NRNNlbjfryLjOF5dXd7e3R5Pp+Px+PT048+vX//6/u39/V1U94eLvw1/s1IuLy+vb66vrq8vLi/oncxspTdqpRR3gJbs5gHiXiKIuRQRVXzyFPpcE8uqVayyRfez1Myyy5Gm6gU7UfYMl7rM86zCtTUQ2VB2+/1utxPVaZ6+ff/2/cd3EK5uru/u78fdOAyDqF5dXT08PDy/vtqrpQ3dPblCsZJA7ohUaxIARTTlDxHRXLOIddHhU8+NP+rnT6JcV1p7qQ7AW1uW+f18Ph5PKqrC0/n8fj4vtaY+DCZHzHVprX37/v3v//EfD4+PNtj1zc3p/X3c7R5/eTxNZy16PL3XZVmmCSCwqIrwwCqs0triARC7+7IsYpaMMiVKSm00/SXtvi57DWsi6iSWoUGAMBPB3ad5Pp5OLy8vh924LIsIzdN8Oh6Px9fj+2leZkeIqQ3FEdMy//Xt2//9t39riMeHRzUL4Obm5pd5Sn1ums7TeQ5Ay1CGsQxFqVgptZbqXlvWf1XcSylWSjETXRvJTEgWDsSazKP3iJg1C6LIKq6fTa31/f395fn528UFURxeX5mpLsv5/Xw+v5+Ox9P7qbmb2f5wyILr5fXl3//+79M8Pf3ydH1za8NQhuHq6up0PD2/vABYlhqIwlKGQURUk5aq1kq0RIQ3JyBE2UiSxqmaiYKia7Wb0yNozQbCrMpM7CzCnPXesizH4/Hp6UlVp+l9HHfMaK3Veal1mef5dDrV1kR1HEcAHn46n/2vr+dpejudHh8fr29uSynJ/nuvntfWam8m9E6zqpqaq2cDjbcGeESsbJQJEbze7V2pZWYhUdViykRKQkSNCIHcwHfT5u317aVYIaYIz3vDoy51nucARFVUm3uty1KXaalzXeZlOb6fD/u9h0/TDIKVMoxjay3JZa2VvfU2XECEhzKogrIFAnjN4oFNew+UQdkvQnh2XIhEeO31CnNkKyo8oi21Hk8nIszLPAxFRUEABfdDEwK8eW01InrPNLsBER6+1PZ2PO12OxGptdbarJT9YVdr82yLNE/ZnjgVaxuHgUV718q91iVzmQlzYGNJWPX+oGwbrMMEIszg7L04kXubJiB8midVoU5jIcJWSslKBYmDW4OWidgR5+k81/r69lasWCnrEIiM48is81LnZVmW2twjQkyGMphaKcXKgIhlWbwl26je/J/3B/751VX4nh9qBBBLq8wUEQEnQEVsGAYrQykqmo37LKZYRAjuUb21eQkPJi7DsNuNu92uDEMqWQCSdNXWiMjIYL1QNtVYa+Lw8OZem22paq3FVg2SaIWcLOeY1sSQ8RVAC2d4yi3Z4xAWa62W0lrK5cxZaUe2vBlMEait1qVGoLQaCBbO7Fq91VaXWmtm/Y+G/MoMNiV4Va8sw+5j9UwZJesoDSLCWwvp8I8+lSJZZBIRkWNtt+YcSiYTC2f5xDSyqiMm6U1HEDxiqdWWBcwgrrUuy5K1I7NkNzZ7vtkl6R2dVPXMVGTVRhEbxxBmUG/kA/DMhEF9AzlGkY1kJmJGKDGTUMuCaT0cOJGvbS5hywpJ2bhEkpbaUqRZWg0AxK159YbELpFMWapKvXniSWuIKdUAIrJssG0TQNJFu4+/rOonelsMRMJCrNlQZQaFNJbKIuLuWQElk6F+XqwsoN4lJ0pg0UVbhANo3tJMyexzSEBVS+nmDwBZ0qdsyiLWKVkKW5tIsb48G7ub2MXRIyI+9Em1TEAp/3cxjGQlVsxb7ScsKdRklcgirMqqLLW1WlvzcIQT1jZm9sK7jrYKEFsTgHoXRJiJ2db6Hn1CinK0gNG1xk2u693grdpM8ZuFGYCpIAShRFhrUhAoj5cJ27yCrEN1LIkUPfOtgraVUmxIopYpPPssm2q/jbPliyznniJ3RZ2Z0mrQDzTqJ/RxUNvH4K0rLbDVSsTIAYToBGATDiJHOLbBkVB3EVBWGqWUYkXVQHBvtOrpYCHkAMO6jNTJe1Msm7z/DPq7CAPQ2o7Mj9CBbaWwq2/ldEBS7szbiT3JCzzTKyfbCjCyFoPkiIxJn4ACIxvmEtyHH/NNvLXDiYnJlAUURBxrrd833HlTDwZi6fam7h4RCHLJ+QO4J4MC9dkAVgJYhLIJkm3YCLRGRABnPxwIIimlcC/tOhHalpgjFYTw5u7OxKL5oyJMISbCCImMgA9j9hDgtTeGlQN2aAIQng2EtWYLUE4VMHqIiSCCkINcQUA4ufcmsQchVcSxDKVYISJvsSy11Q3pi6myMgI1orVGQaICgxEIKkImxEF99ekfWCeNtrDBJ6D9mIxK1KOeyYHIYGVI9GTdnwBmpOgaiIjm3pYWrRHIrKiVdH0iRiwRUWsNRNEiLKra014uLBCEYI7EGuBnLhSg+MfJ0X9ybel2m3xZWQb6RAsHbTOAn+/6PKoB6hOFnzq93UYBJ2+t6ToUKCJFdWsmY53a2LjQpqrSpzd+WuunqUAAHU07Molss7DMBDgC4Snhr3N1H1qfAGKRoZPsba3ZBX0gzTxHsNyXZcmS0NRUBEEfJosIgvVY+pjf6JXkxmH+u6U/RisoSZgIAkyQfDhx9t490SNtwslGmVcGxU4Cj/TP1hoTqyqBVbUMJE0yahHuosXKUAaVgYk9FZ7WUt6yzaM/NvBJoVixMuGiH0XmwRz1IEnsCCA4urHzli3ot8TZ9xAJtxLN0yytNQTMTMVEpBQR6tOM1V0FppbDDczSWiOiPqUT6wn8f51+O4ptc7ke6gpq9zvknOkWErkBEV39+COLg504GU5OGRERm5gVZuHgJi0jnkCRrmUlqVRrLc8xCEY/xSH+MYDx80WrhPeRjz/SLGd4rXsFAM7BjAyPznUZBAhB1tGdAAgZA2kXaM+328x85mlVjYg12REB/w+4Rm3gfTiVLAAAAABJRU5ErkJggg==">
 <link rel="shortcut icon" type="image/png" href="data:image/png;base64,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">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -1586,7 +1614,7 @@ textarea.qual-cell{min-height:34px;line-height:1.35;}
 .qual-chart-card h3{margin:0 0 10px;font:700 13px Inter,Arial,sans-serif;color:#0f172a;text-transform:uppercase;letter-spacing:.4px;}
 .qual-chart-box{position:relative;height:260px;}
 @media(max-width:900px){.qual-table-wrap{height:15cm;min-height:15cm;max-height:15cm;}}
-/* --- CSS novo: explicabilidade, gráficos, PDF e drill-down --- */
+/* --- v49.25 CSS novo: explicabilidade, gráficos, PDF e drill-down --- */
 .ia-explain-btn{ display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--rodo-blue),#003a7a);color:#fff;border:none;cursor:pointer;font-size:10px;font-weight:800;margin-left:6px;vertical-align:middle;box-shadow:0 2px 6px rgba(0,87,183,.3); }
 .ia-explain-btn::after{ content:'?'; }
 
@@ -1606,6 +1634,7 @@ textarea.qual-cell{min-height:34px;line-height:1.35;}
 .drill-table th{ background:#0057B7;color:#fff;padding:8px 10px;text-align:left;position:sticky;top:0; }
 .drill-table td{ padding:7px 10px;border-bottom:1px solid #e2e8f0; }
 
+/* ===================== ASSISTENTE IA RODOBRAS ===================== */
 /* ===================== ASSISTENTE IA RODOBRAS ===================== */
 #ia-fab{
   position:fixed;bottom:28px;right:28px;z-index:9000;
@@ -1812,31 +1841,8 @@ body.dark #ia-messages::-webkit-scrollbar-thumb{ background:rgba(127,179,255,.25
   </div>
   <div class="top-actions">
     <span class="status-pill" id="recCount" title="Total de registros e data/hora da última importação"><span class="dot"></span> 446.002 registros</span>
-    <input type="file" id="fileInput" window.RodoWorker = {
-  _worker: null,
-  iniciar(buffer, nomeArquivo, onProgresso, onConcluido, onErro) {
-    if (this._worker) this._worker.terminate();
-    if (typeof Worker === 'undefined') { onErro('Web Workers não suportados. Usando modo padrão.'); return false; }
-    try { this._worker = new Worker('rodo-worker.js'); }
-    catch(e) { onErro('Não foi possível iniciar o Worker (hospedagem via file:// não suporta). Usando modo padrão.'); return false; }
-
-    this._worker.onmessage = (e) => {
-      const { tipo, msg, pct, rows, compressed, agg, totalRegistros } = e.data;
-      if (tipo === 'PROGRESSO') onProgresso(msg, pct);
-      if (tipo === 'CONCLUIDO') { this._worker.terminate(); onConcluido({ rows, compressed, agg, totalRegistros }); }
-      if (tipo === 'ERRO')      { this._worker.terminate(); onErro(msg); }
-    };
-    this._worker.onerror = (e) => { this._worker.terminate(); onErro(e.message); };
-    this._worker.postMessage({ tipo: 'PROCESSAR_PLANILHA', payload: { buffer, nomeArquivo } }, [buffer]);
-    return true;
-  },
-  cancelar() { if (this._worker) { this._worker.terminate(); this._worker = null; } }
-};
-
- accept=".xlsb,.xlsx,.xls,.json,application/json" style="display:none">
-
-<button class="btn ghost" onclick="window.RodoPDF?.gerar()" title="Gerar relatório PDF com análise de IA">📄 PDF IA</button>
-
+    <input type="file" id="fileInput" accept=".xlsb,.xlsx,.xls,.json,application/json" style="display:none">
+    <button class="btn ghost" onclick="window.RodoPDF?.gerar()" title="Gerar relatório PDF com análise de IA">📄 PDF IA</button>
     <button class="btn ghost" id="exportBtn" title="Exportar relatório (Excel, PDF ou JSON)">Exportar</button>
     <button class="btn ghost" id="importBtn" title="Importar arquivo Excel (xlsx/xlsb/xls) ou JSON">Importar</button>
     <button class="btn hamburger" id="menuBtn" title="Menu" aria-label="Abrir menu">
@@ -1912,8 +1918,7 @@ body.dark #ia-messages::-webkit-scrollbar-thumb{ background:rgba(127,179,255,.25
 
   <!-- v25: Rodapé do drawer - botão Sair em vermelho -->
   <div class="drawer-footer" id="drawerFooter">
-<button onclick="window.RodoGov?.verLog()" style="margin-bottom:8px;padding:10px 14px;background:rgba(255,255,255,.10);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;width:100%;">🔐 Trilha de Auditoria</button>
-
+    <button onclick="window.RodoGov?.verLog()" style="margin-bottom:8px;padding:10px 14px;background:rgba(255,255,255,.10);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px;width:100%;">🔐 Trilha de Auditoria</button>
     <button class="drawer-logout" id="btnLogout">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
       Sair
@@ -4565,7 +4570,6 @@ function updateRecCount(){
   el.title = stale
     ? 'Dados desatualizados: o arquivo importado tem mais de 24 horas — importe uma versão nova do arquivo'
     : 'Total de registros e data de modificação do arquivo importado';
-
 }
 
 /* Filtros dinâmicos: opções de cada filtro consideram TODOS os OUTROS filtros aplicados */
@@ -6818,16 +6822,18 @@ document.getElementById('fileInput').addEventListener('change', async (e)=>{
     const msgIgn = ignoradas > 0 ? ' • '+fmt(ignoradas)+' ignorada(s)' : '';
     const msgCols = ' • '+colsMapeadasOk.length+'/'+totalColunasArquivo+' colunas mapeadas';
     toast('Planilha importada: '+fmt(DATA.length)+' registro(s)'+msgIgn+msgCols, 'success');
-RodoHistoricoKPI.salvar({
-  ns: parseFloat(document.getElementById('gaugePct')?.innerText)||0,
-  total: parseInt((document.getElementById('kTotalTitle')?.innerText||'0').replace(/\D/g,'')),
-  atrasado: parseInt((document.getElementById('kAtraso')?.innerText||'0').replace(/\D/g,'')),
-  aberto: parseInt((document.getElementById('kAberto')?.innerText||'0').replace(/\D/g,'')),
-  entregue: parseInt((document.getElementById('kEntregue')?.innerText||'0').replace(/\D/g,'')),
-  mobile: parseFloat(document.getElementById('gaugeMobilePct')?.innerText)||0
-});
-rodoMarcarImportacaoConcluida();
-
+    // v49.25: registra histórico de KPIs desta importação e dispensa o banner de "nova versão"
+    try{
+      window.RodoHistoricoKPI?.salvar({
+        ns: parseFloat(document.getElementById('gaugePct')?.innerText)||0,
+        total: parseInt((document.getElementById('kTotalTitle')?.innerText||'0').replace(/\D/g,'')),
+        atrasado: parseInt((document.getElementById('kAtraso')?.innerText||'0').replace(/\D/g,'')),
+        aberto: parseInt((document.getElementById('kAberto')?.innerText||'0').replace(/\D/g,'')),
+        entregue: parseInt((document.getElementById('kEntregue')?.innerText||'0').replace(/\D/g,'')),
+        mobile: parseFloat(document.getElementById('gaugeMobilePct')?.innerText)||0
+      });
+      window.rodoMarcarImportacaoConcluida?.();
+    }catch(_){}
   } catch(err){
     console.error(err);
     hideOverlay();
@@ -13344,308 +13350,274 @@ window.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
   // ⚠️ COLE SUA CHAVE AQUI
-  const GEMINI_API_KEY = "AQ.Ab8RN6JcmF6QtJOvIo7ZN6VxxhdIWft4-8sGvkbsQxQbTkpNbA";
+  const GEMINI_API_KEY = "AQ.Ab8RN6Kz-oPe1jeBybevvC8K4O7NKWXk9RohAYK0qfRGI848PA";
 
   // Modelos em ordem de preferência — se o primeiro falhar, tenta o próximo
   const MODELOS_CANDIDATOS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
   const MAX_TENTATIVAS_POR_MODELO = 3;
   const ESPERA_BASE_MS = 3000; // 3s na 1ª espera, 6s na 2ª
-window.RodoHistoricoKPI = {
-  CHAVE: 'rodo_kpi_historico',
-  MAX: 60,
 
-  salvar(kpis) {
-    const hist = this.carregar();
-    hist.push({
-      ts: new Date().toISOString(),
-      ns: parseFloat(kpis.ns)||0, total: parseInt(kpis.total)||0,
-      atrasado: parseInt(kpis.atrasado)||0, aberto: parseInt(kpis.aberto)||0,
-      entregue: parseInt(kpis.entregue)||0, justificado: parseInt(kpis.justificado)||0,
-      mobile: parseFloat(kpis.mobile)||0, romaneio: parseFloat(kpis.romaneio)||0
-    });
-    if (hist.length > this.MAX) hist.splice(0, hist.length - this.MAX);
-    try { localStorage.setItem(this.CHAVE, JSON.stringify(hist)); } catch(e) {}
-    return hist;
-  },
-  carregar() { try { return JSON.parse(localStorage.getItem(this.CHAVE) || '[]'); } catch(e) { return []; } },
-  obterUltimos(n=10) { return this.carregar().slice(-n); },
-  compararUltimos(n=2) {
-    const hist = this.obterUltimos(n);
-    if (hist.length < 2) return null;
-    const [ant, atu] = [hist[hist.length-2], hist[hist.length-1]];
-    const delta = (a,b) => b>0 ? (((a-b)/b)*100).toFixed(1) : '—';
-    return { anterior:ant, atual:atu, deltas:{
-      ns: delta(atu.ns,ant.ns), total: delta(atu.total,ant.total),
-      atrasado: delta(atu.atrasado,ant.atrasado), aberto: delta(atu.aberto,ant.aberto)
-    }};
-  },
-  gerarResumoTexto() {
-    const comp = this.compararUltimos(2);
-    if (!comp) return 'Apenas uma importação registrada — importe novamente para comparar.';
-    const { anterior, atual, deltas } = comp;
-    const fmt = d => d>0 ? `+${d}%` : `${d}%`;
-    return `Comparação entre as últimas 2 importações:
-• NS: ${anterior.ns.toFixed(1)}% → ${atual.ns.toFixed(1)}% (${fmt(deltas.ns)})
-• Total: ${anterior.total.toLocaleString('pt-BR')} → ${atual.total.toLocaleString('pt-BR')} (${fmt(deltas.total)})
-• Atrasadas: ${anterior.atrasado.toLocaleString('pt-BR')} → ${atual.atrasado.toLocaleString('pt-BR')} (${fmt(deltas.atrasado)})
-• Em Aberto: ${anterior.aberto.toLocaleString('pt-BR')} → ${atual.aberto.toLocaleString('pt-BR')} (${fmt(deltas.aberto)})`;
-  }
-};
+  // v49.25 — Módulos utilitários (definidos ANTES de qualquer uso):
 
-// ═══ 1) HISTÓRICO DE KPIs ENTRE IMPORTAÇÕES ═══
-window.RodoHistoricoKPI = {
-  CHAVE:'rodo_kpi_historico', MAX:60,
-  salvar(kpis) {
-    const h = this.carregar();
-    h.push({ ts:new Date().toISOString(), ns:parseFloat(kpis.ns)||0, total:parseInt(kpis.total)||0,
-      atrasado:parseInt(kpis.atrasado)||0, aberto:parseInt(kpis.aberto)||0, entregue:parseInt(kpis.entregue)||0, mobile:parseFloat(kpis.mobile)||0 });
-    if (h.length > this.MAX) h.splice(0, h.length - this.MAX);
-    try { localStorage.setItem(this.CHAVE, JSON.stringify(h)); } catch(e) {}
-  },
-  carregar() { try { return JSON.parse(localStorage.getItem(this.CHAVE)||'[]'); } catch(e) { return []; } },
-  gerarResumoTexto() {
-    const h = this.carregar().slice(-2);
-    if (h.length < 2) return 'Apenas uma importação registrada — importe de novo para comparar.';
-    const [a,b] = h; const d = (x,y) => y>0 ? (((x-y)/y)*100).toFixed(1) : '—';
-    return `Última vs. anterior: NS ${a.ns.toFixed(1)}%→${b.ns.toFixed(1)}% | Total ${a.total.toLocaleString('pt-BR')}→${b.total.toLocaleString('pt-BR')} | Atrasos ${a.atrasado}→${b.atrasado} (${d(b.atrasado,a.atrasado)}%)`;
-  }
-};
-
-// ═══ 2) WRAPPER DO WEB WORKER ═══
-window.RodoWorker = {
-  _w:null,
-  iniciar(buffer, onProgresso, onConcluido, onErro) {
-    if (this._w) this._w.terminate();
-    if (typeof Worker === 'undefined') { onErro('Worker não suportado neste navegador.'); return false; }
-    try { this._w = new Worker('rodo-worker.js'); }
-    catch(e) { onErro('Worker indisponível (rodando via file://? use HTTP).'); return false; }
-    this._w.onmessage = (e) => {
-      const d = e.data;
-      if (d.tipo === 'PROGRESSO') onProgresso(d.msg, d.pct);
-      if (d.tipo === 'CONCLUIDO') { this._w.terminate(); onConcluido(d); }
-      if (d.tipo === 'ERRO')      { this._w.terminate(); onErro(d.msg); }
-    };
-    this._w.postMessage({ tipo:'PROCESSAR_PLANILHA', payload:{ buffer } }, [buffer]);
-    return true;
-  }
-};
-
-// ═══ 3) LINGUAGEM NATURAL → FILTROS ═══
-window.RodoNL2Filtros = {
-  UNI:['APU','ASC','BAC','BBS','BEL','BIG','BNU','BRQ','BTO','CAN','CAS','CCI','CCO','CCV','CFC','CHO','CIA','CMQ','CPM','CRM','CVL','CWB','CXS','ERM','FBL','FOZ','FRW','GMO','GRU','GVA','IBI','IBM','IJI','ITJ','JOA','JOI','LAG','LDO','LGV','LJO','LON','LPR','MGA','MIG','MUA','ORO','PAR','PB2','PEL','PFU','PGA','POA','PRV','PTG','PTU','RDS','RSI','SAR','SAS','SBT','SC1','SCX','SCZ','SEC','SNT','SRO','TBA','TIJ','TLB','UVI','VAC','VIP'],
-  CLI:['ANGELONI','BEGUR','BRITANIA','CARREFOUR','CASTOR','ELETROLUX','FAST SHOP','LEONFER','LG ELETRONICS','METALFRIO','MIDEA','MONDELEZ','OMINIC','PANASONIC','WHIRLPOOL','WHP-PEÇAS'],
-  UFS:['PR','SC','RS','SP'],
-  MESES:{jan:'jan',fev:'fev',mar:'mar',abr:'abr',mai:'mai',jun:'jun',jul:'jul',ago:'ago',janeiro:'jan',fevereiro:'fev','março':'mar',abril:'abr',maio:'mai',junho:'jun',julho:'jul',agosto:'ago'},
-  extrair(texto) {
-    const t = texto.toUpperCase(), tl = texto.toLowerCase();
-    return {
-      unidade: this.UNI.find(u => new RegExp(`\\b${u}\\b`).test(t)) || null,
-      cliente: this.CLI.find(c => t.includes(c)) || null,
-      uf: this.UFS.find(u => new RegExp(`\\b${u}\\b`).test(t)) || null,
-      mes: Object.entries(this.MESES).find(([k]) => tl.includes(k))?.[1] || null
-    };
-  },
-  aplicar(filtros) {
-    const aplicados = [];
-    const set = (id,val) => { const el=document.getElementById(id); if(el&&val){ el.value=val; el.dispatchEvent(new Event('change')); aplicados.push(`${id.replace('f','')}=${val}`); } };
-    set('fUnidade',filtros.unidade); set('fCliente',filtros.cliente); set('fUf',filtros.uf); set('fMes',filtros.mes);
-    return aplicados;
-  },
-  processar(texto) {
-    const f = this.extrair(texto);
-    if (!Object.values(f).some(v=>v)) return null;
-    return this.aplicar(f);
-  }
-};
-
-// ═══ 4) EXPLICABILIDADE NOS KPIs ═══
-window.RodoExplicabilidade = {
-  CONTEXTOS: {
-    'gaugePct':{ prompt:'Explique por que o Nível de Serviço está nesse valor frente à meta de 97% e os fatores que mais o impactam.' },
-    'kAtraso':{ prompt:'Explique o número de atrasos, quais unidades/clientes mais contribuem, e como reduzi-lo.' },
-    'kAberto':{ prompt:'Explique o risco das entregas em aberto para o NS e as causas comuns de pendência.' },
-    'gaugeMobilePct':{ prompt:'Explique a Baixa Mobile, a meta de 95%, e os impactos quando fica abaixo.' },
-    'kRomaneioVal':{ prompt:'Explique o Romaneio, sua importância para o NS, e o que causa taxas baixas.' }
-  },
-  injetar() {
-    for (const [id,ctx] of Object.entries(this.CONTEXTOS)) {
-      const el = document.getElementById(id);
-      if (!el || el.parentNode.querySelector('.ia-explain-btn')) continue;
-      const btn = document.createElement('button');
-      btn.className='ia-explain-btn'; btn.title='Explicar com IA';
-      btn.addEventListener('click', e => { e.stopPropagation(); this.explicar(ctx.prompt); });
-      el.parentNode.insertBefore(btn, el.nextSibling);
+  // ═══ 1) HISTÓRICO DE KPIs ENTRE IMPORTAÇÕES ═══
+  window.RodoHistoricoKPI = {
+    CHAVE:'rodo_kpi_historico', MAX:60,
+    salvar(kpis) {
+      const h = this.carregar();
+      h.push({ ts:new Date().toISOString(), ns:parseFloat(kpis.ns)||0, total:parseInt(kpis.total)||0,
+        atrasado:parseInt(kpis.atrasado)||0, aberto:parseInt(kpis.aberto)||0, entregue:parseInt(kpis.entregue)||0, mobile:parseFloat(kpis.mobile)||0 });
+      if (h.length > this.MAX) h.splice(0, h.length - this.MAX);
+      try { localStorage.setItem(this.CHAVE, JSON.stringify(h)); } catch(e) {}
+    },
+    carregar() { try { return JSON.parse(localStorage.getItem(this.CHAVE)||'[]'); } catch(e) { return []; } },
+    gerarResumoTexto() {
+      const h = this.carregar().slice(-2);
+      if (h.length < 2) return 'Apenas uma importação registrada — importe de novo para comparar.';
+      const [a,b] = h; const d = (x,y) => y>0 ? (((x-y)/y)*100).toFixed(1) : '—';
+      return `Última vs. anterior: NS ${a.ns.toFixed(1)}%→${b.ns.toFixed(1)}% | Total ${a.total.toLocaleString('pt-BR')}→${b.total.toLocaleString('pt-BR')} | Atrasos ${a.atrasado}→${b.atrasado} (${d(b.atrasado,a.atrasado)}%)`;
     }
-  },
-  explicar(prompt) {
-    const p = document.getElementById('ia-panel');
-    if (p && !p.classList.contains('open')) p.classList.add('open');
-    setTimeout(() => enviar(`[Explicar KPI] ${prompt}`), 300);
-  }
-};
+  };
 
-// ═══ 5) ÍCONE DE IA NOS GRÁFICOS ═══
-window.RodoPainelIA = {
-  GRAFICOS: [
-    { id:'chartNivelMensal', prompt:'Analise tendências do NS mensal frente à meta de 97%.' },
-    { id:'chartDia', prompt:'Identifique picos e vales anormais de emissão vs entrega.' },
-    { id:'chartUnidade', prompt:'Quais unidades estão abaixo da meta? Quais se destacam?' },
-    { id:'chartUf', prompt:'Qual UF tem pior desempenho e por quê?' },
-    { id:'chartCliente', prompt:'Qual cliente tem mais atrasos proporcionalmente?' },
-    { id:'chartOcorr73Dia', prompt:'Identifique padrões na Ocorrência 73.' },
-    { id:'chartParceirosNivel', prompt:'Qual UF de parceiros tem tendência mais preocupante?' }
-  ],
-  injetar() {
-    this.GRAFICOS.forEach(g => {
-      const canvas = document.getElementById(g.id);
-      const panel = canvas?.closest('.panel');
-      if (!panel || panel.querySelector('.panel-ia-btn')) return;
-      const btn = document.createElement('button');
-      btn.className='panel-ia-btn'; btn.title='Analisar com IA'; btn.innerHTML='🤖';
-      btn.addEventListener('click', () => {
-        const txt = panel.innerText.replace(/\s+/g,' ').trim().slice(0,600);
-        const p = document.getElementById('ia-panel');
-        if (p && !p.classList.contains('open')) p.classList.add('open');
-        setTimeout(() => enviar(`[Gráfico] ${g.prompt}\n\nDados visíveis: ${txt}`), 300);
+  // ═══ 2) WRAPPER DO WEB WORKER ═══
+  window.RodoWorker = {
+    _w:null,
+    iniciar(buffer, onProgresso, onConcluido, onErro) {
+      if (this._w) this._w.terminate();
+      if (typeof Worker === 'undefined') { onErro('Worker não suportado neste navegador.'); return false; }
+      try { this._w = new Worker('rodo-worker.js'); }
+      catch(e) { onErro('Worker indisponível (rodando via file://? use HTTP).'); return false; }
+      this._w.onmessage = (e) => {
+        const d = e.data;
+        if (d.tipo === 'PROGRESSO') onProgresso(d.msg, d.pct);
+        if (d.tipo === 'CONCLUIDO') { this._w.terminate(); onConcluido(d); }
+        if (d.tipo === 'ERRO')      { this._w.terminate(); onErro(d.msg); }
+      };
+      this._w.postMessage({ tipo:'PROCESSAR_PLANILHA', payload:{ buffer } }, [buffer]);
+      return true;
+    }
+  };
+
+  // ═══ 3) LINGUAGEM NATURAL → FILTROS ═══
+  window.RodoNL2Filtros = {
+    UNI:['APU','ASC','BAC','BBS','BEL','BIG','BNU','BRQ','BTO','CAN','CAS','CCI','CCO','CCV','CFC','CHO','CIA','CMQ','CPM','CRM','CVL','CWB','CXS','ERM','FBL','FOZ','FRW','GMO','GRU','GVA','IBI','IBM','IJI','ITJ','JOA','JOI','LAG','LDO','LGV','LJO','LON','LPR','MGA','MIG','MUA','ORO','PAR','PB2','PEL','PFU','PGA','POA','PRV','PTG','PTU','RDS','RSI','SAR','SAS','SBT','SC1','SCX','SCZ','SEC','SNT','SRO','TBA','TIJ','TLB','UVI','VAC','VIP'],
+    CLI:['ANGELONI','BEGUR','BRITANIA','CARREFOUR','CASTOR','ELETROLUX','FAST SHOP','LEONFER','LG ELETRONICS','METALFRIO','MIDEA','MONDELEZ','OMINIC','PANASONIC','WHIRLPOOL','WHP-PEÇAS'],
+    UFS:['PR','SC','RS','SP'],
+    MESES:{jan:'jan',fev:'fev',mar:'mar',abr:'abr',mai:'mai',jun:'jun',jul:'jul',ago:'ago',janeiro:'jan',fevereiro:'fev','março':'mar',abril:'abr',maio:'mai',junho:'jun',julho:'jul',agosto:'ago'},
+    extrair(texto) {
+      const t = texto.toUpperCase(), tl = texto.toLowerCase();
+      return {
+        unidade: this.UNI.find(u => new RegExp(`\\b${u}\\b`).test(t)) || null,
+        cliente: this.CLI.find(c => t.includes(c)) || null,
+        uf: this.UFS.find(u => new RegExp(`\\b${u}\\b`).test(t)) || null,
+        mes: Object.entries(this.MESES).find(([k]) => tl.includes(k))?.[1] || null
+      };
+    },
+    aplicar(filtros) {
+      const aplicados = [];
+      const set = (id,val) => { const el=document.getElementById(id); if(el&&val){ el.value=val; el.dispatchEvent(new Event('change')); aplicados.push(`${id.replace('f','')}=${val}`); } };
+      set('fUnidade',filtros.unidade); set('fCliente',filtros.cliente); set('fUf',filtros.uf); set('fMes',filtros.mes);
+      return aplicados;
+    },
+    processar(texto) {
+      const f = this.extrair(texto);
+      if (!Object.values(f).some(v=>v)) return null;
+      return this.aplicar(f);
+    }
+  };
+
+  // ═══ 4) EXPLICABILIDADE NOS KPIs ═══
+  window.RodoExplicabilidade = {
+    CONTEXTOS: {
+      'gaugePct':{ prompt:'Explique por que o Nível de Serviço está nesse valor frente à meta de 97% e os fatores que mais o impactam.' },
+      'kAtraso':{ prompt:'Explique o número de atrasos, quais unidades/clientes mais contribuem, e como reduzi-lo.' },
+      'kAberto':{ prompt:'Explique o risco das entregas em aberto para o NS e as causas comuns de pendência.' },
+      'gaugeMobilePct':{ prompt:'Explique a Baixa Mobile, a meta de 95%, e os impactos quando fica abaixo.' },
+      'kRomaneioVal':{ prompt:'Explique o Romaneio, sua importância para o NS, e o que causa taxas baixas.' }
+    },
+    injetar() {
+      for (const [id,ctx] of Object.entries(this.CONTEXTOS)) {
+        const el = document.getElementById(id);
+        if (!el || el.parentNode.querySelector('.ia-explain-btn')) continue;
+        const btn = document.createElement('button');
+        btn.className='ia-explain-btn'; btn.title='Explicar com IA';
+        btn.addEventListener('click', e => { e.stopPropagation(); this.explicar(ctx.prompt); });
+        el.parentNode.insertBefore(btn, el.nextSibling);
+      }
+    },
+    explicar(prompt) {
+      const p = document.getElementById('ia-panel');
+      if (p && !p.classList.contains('open')) p.classList.add('open');
+      setTimeout(() => enviar(`[Explicar KPI] ${prompt}`), 300);
+    }
+  };
+
+  // ═══ 5) ÍCONE DE IA NOS GRÁFICOS ═══
+  window.RodoPainelIA = {
+    GRAFICOS: [
+      { id:'chartNivelMensal', prompt:'Analise tendências do NS mensal frente à meta de 97%.' },
+      { id:'chartDia', prompt:'Identifique picos e vales anormais de emissão vs entrega.' },
+      { id:'chartUnidade', prompt:'Quais unidades estão abaixo da meta? Quais se destacam?' },
+      { id:'chartUf', prompt:'Qual UF tem pior desempenho e por quê?' },
+      { id:'chartCliente', prompt:'Qual cliente tem mais atrasos proporcionalmente?' },
+      { id:'chartOcorr73Dia', prompt:'Identifique padrões na Ocorrência 73.' },
+      { id:'chartParceirosNivel', prompt:'Qual UF de parceiros tem tendência mais preocupante?' }
+    ],
+    injetar() {
+      this.GRAFICOS.forEach(g => {
+        const canvas = document.getElementById(g.id);
+        const panel = canvas?.closest('.panel');
+        if (!panel || panel.querySelector('.panel-ia-btn')) return;
+        const btn = document.createElement('button');
+        btn.className='panel-ia-btn'; btn.title='Analisar com IA'; btn.innerHTML='🤖';
+        btn.addEventListener('click', () => {
+          const txt = panel.innerText.replace(/\s+/g,' ').trim().slice(0,600);
+          const p = document.getElementById('ia-panel');
+          if (p && !p.classList.contains('open')) p.classList.add('open');
+          setTimeout(() => enviar(`[Gráfico] ${g.prompt}\n\nDados visíveis: ${txt}`), 300);
+        });
+        panel.appendChild(btn);
       });
-      panel.appendChild(btn);
-    });
-  }
-};
-
-// ═══ 6) RELATÓRIO PDF COM ANÁLISE DE IA ═══
-window.RodoPDF = {
-  gerar() {
-    let m = document.getElementById('pdf-modal-bk');
-    if (!m) {
-      m = document.createElement('div'); m.id='pdf-modal-bk'; m.className='pdf-modal-backdrop';
-      m.innerHTML = `<div class="pdf-modal"><h3 style="margin:0 0 6px">📄 Gerar Relatório PDF com IA</h3>
-        <p style="color:#64748b;font-size:13px;margin:0 0 10px">A IA vai analisar os dados atuais e gerar um relatório executivo.</p>
-        <div class="pdf-progress" id="pdf-pw" style="display:none"><div class="pdf-progress-bar" id="pdf-pb" style="width:0%"></div></div>
-        <div id="pdf-st" style="font-size:12px;color:#64748b;min-height:18px;"></div>
-        <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
-          <button onclick="document.getElementById('pdf-modal-bk').classList.remove('show')" style="padding:10px 18px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;">Cancelar</button>
-          <button id="pdf-ok" onclick="window.RodoPDF.executar()" style="padding:10px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#0057B7,#003a7a);color:#fff;font-weight:700;cursor:pointer;">Gerar PDF</button>
-        </div></div>`;
-      document.body.appendChild(m);
     }
-    m.classList.add('show');
-  },
-  prog(pct,msg) { const w=document.getElementById('pdf-pw'),b=document.getElementById('pdf-pb'),s=document.getElementById('pdf-st'); if(w)w.style.display='block'; if(b)b.style.width=pct+'%'; if(s)s.textContent=msg; },
-  async executar() {
-    const btn=document.getElementById('pdf-ok'); if(btn)btn.disabled=true;
-    try {
-      this.prog(10,'Carregando bibliotecas...'); await ensurePdfLibs();
-      this.prog(25,'Coletando dados...');
-      const g = id => document.getElementById(id)?.innerText || '—';
-      const kpis = { ns:g('gaugePct'), total:g('kTotalTitle'), atrasado:g('kAtraso'), aberto:g('kAberto'), mobile:g('gaugeMobilePct'), cwb:g('hqCWBns'), joi:g('hqJOIns'), poa:g('hqPOAns') };
-      const hist = window.RodoHistoricoKPI?.gerarResumoTexto() || 'Histórico indisponível.';
-      this.prog(40,'Gerando análise com IA...');
-      const analise = await chamarGemini(`Gere RELATÓRIO EXECUTIVO para Rodobras (meta NS=97%). Dados: NS=${kpis.ns} Total=${kpis.total} Atrasadas=${kpis.atrasado} Aberto=${kpis.aberto} Mobile=${kpis.mobile} CWB/JOI/POA=${kpis.cwb}/${kpis.joi}/${kpis.poa}. Histórico: ${hist}. Estrutura: 1)Resumo 2)KPIs 3)Atenção 4)Recomendações. Máx 500 palavras.`);
-      this.prog(70,'Montando PDF...');
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit:'mm', format:'a4' });
-      const W = doc.internal.pageSize.getWidth(), M = 14;
-      doc.setFillColor(0,87,183); doc.rect(0,0,W,28,'F');
-      doc.setTextColor(255,255,255); doc.setFontSize(16); doc.setFont(undefined,'bold');
-      doc.text('Relatório de Nível de Serviço — Rodobras', M, 13);
-      doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, M, 22);
-      let y=36; doc.setTextColor(15,27,45); doc.setFontSize(13); doc.setFont(undefined,'bold'); doc.text('KPIs Principais', M, y); y+=6;
-      doc.setFontSize(10); doc.setFont(undefined,'normal');
-      doc.text(`NS: ${kpis.ns} | Total: ${kpis.total}`, M, y); y+=6;
-      doc.text(`Atrasadas: ${kpis.atrasado} | Em Aberto: ${kpis.aberto}`, M, y); y+=6;
-      doc.text(`Mobile: ${kpis.mobile} | CWB/JOI/POA: ${kpis.cwb}/${kpis.joi}/${kpis.poa}`, M, y); y+=10;
-      doc.setDrawColor(227,234,243); doc.line(M,y,W-M,y); y+=6;
-      doc.setFontSize(13); doc.setFont(undefined,'bold'); doc.text('Análise Executiva (IA)', M, y); y+=6;
-      doc.setFontSize(9); doc.setFont(undefined,'normal');
-      doc.splitTextToSize(analise.replace(/\*\*/g,''), W-M*2).forEach(l => { if(y>278){doc.addPage();y=14;} doc.text(l,M,y); y+=4.5; });
-      const total = doc.internal.getNumberOfPages();
-      for (let p=1;p<=total;p++) { doc.setPage(p); doc.setFillColor(0,87,183); doc.rect(0,285,W,12,'F'); doc.setTextColor(255,255,255); doc.setFontSize(8); doc.text('Rodobras — Dashboard NS',M,292); doc.text(`Pág. ${p}/${total}`,W-M-18,292); }
-      this.prog(95,'Salvando...'); doc.save(`relatorio-rodobras-${new Date().toISOString().slice(0,10)}.pdf`);
-      this.prog(100,'✅ PDF gerado!');
-      setTimeout(()=>{ document.getElementById('pdf-modal-bk')?.classList.remove('show'); if(btn)btn.disabled=false; },1500);
-    } catch(err) { this.prog(0,`❌ Erro: ${err.message}`); if(btn)btn.disabled=false; }
-  }
-};
+  };
 
-// ═══ 7) DRILL-DOWN COM EXPORTAÇÃO ═══
-window.RodoDrillDown = {
-  _dados:[], _titulo:'',
-  abrir(titulo, dados, colunas) {
-    this._dados=dados; this._titulo=titulo;
-    let m = document.getElementById('drill-modal-bk');
-    if (!m) {
-      m = document.createElement('div'); m.id='drill-modal-bk'; m.className='drill-modal-backdrop';
-      m.innerHTML = `<div class="drill-modal">
-        <div class="drill-modal-header"><h3 id="drill-tit" style="margin:0;font-size:15px;"></h3>
-          <div style="display:flex;gap:8px">
-            <button onclick="window.RodoDrillDown.exportCSV()" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700">📥 CSV</button>
-            <button onclick="window.RodoDrillDown.iaAnalisar()" style="background:#FFB400;color:#000;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700">🤖 IA</button>
-            <button onclick="document.getElementById('drill-modal-bk').classList.remove('show')" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer">✕</button>
-          </div></div>
-        <div style="padding:10px 16px;font-size:12px;color:#64748b" id="drill-info"></div>
-        <div style="flex:1;overflow:auto;padding:0 16px 16px"><table class="drill-table"><thead id="drill-th"></thead><tbody id="drill-tb"></tbody></table></div>
-      </div>`;
-      document.body.appendChild(m);
+  // ═══ 6) RELATÓRIO PDF COM ANÁLISE DE IA ═══
+  window.RodoPDF = {
+    gerar() {
+      let m = document.getElementById('pdf-modal-bk');
+      if (!m) {
+        m = document.createElement('div'); m.id='pdf-modal-bk'; m.className='pdf-modal-backdrop';
+        m.innerHTML = `<div class="pdf-modal"><h3 style="margin:0 0 6px">📄 Gerar Relatório PDF com IA</h3>
+          <p style="color:#64748b;font-size:13px;margin:0 0 10px">A IA vai analisar os dados atuais e gerar um relatório executivo.</p>
+          <div class="pdf-progress" id="pdf-pw" style="display:none"><div class="pdf-progress-bar" id="pdf-pb" style="width:0%"></div></div>
+          <div id="pdf-st" style="font-size:12px;color:#64748b;min-height:18px;"></div>
+          <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+            <button onclick="document.getElementById('pdf-modal-bk').classList.remove('show')" style="padding:10px 18px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;">Cancelar</button>
+            <button id="pdf-ok" onclick="window.RodoPDF.executar()" style="padding:10px 20px;border:none;border-radius:8px;background:linear-gradient(135deg,#0057B7,#003a7a);color:#fff;font-weight:700;cursor:pointer;">Gerar PDF</button>
+          </div></div>`;
+        document.body.appendChild(m);
+      }
+      m.classList.add('show');
+    },
+    prog(pct,msg) { const w=document.getElementById('pdf-pw'),b=document.getElementById('pdf-pb'),s=document.getElementById('pdf-st'); if(w)w.style.display='block'; if(b)b.style.width=pct+'%'; if(s)s.textContent=msg; },
+    async executar() {
+      const btn=document.getElementById('pdf-ok'); if(btn)btn.disabled=true;
+      try {
+        this.prog(10,'Carregando bibliotecas...'); await ensurePdfLibs();
+        this.prog(25,'Coletando dados...');
+        const g = id => document.getElementById(id)?.innerText || '—';
+        const kpis = { ns:g('gaugePct'), total:g('kTotalTitle'), atrasado:g('kAtraso'), aberto:g('kAberto'), mobile:g('gaugeMobilePct'), cwb:g('hqCWBns'), joi:g('hqJOIns'), poa:g('hqPOAns') };
+        const hist = window.RodoHistoricoKPI?.gerarResumoTexto() || 'Histórico indisponível.';
+        this.prog(40,'Gerando análise com IA...');
+        const analise = await chamarGemini(`Gere RELATÓRIO EXECUTIVO para Rodobras (meta NS=97%). Dados: NS=${kpis.ns} Total=${kpis.total} Atrasadas=${kpis.atrasado} Aberto=${kpis.aberto} Mobile=${kpis.mobile} CWB/JOI/POA=${kpis.cwb}/${kpis.joi}/${kpis.poa}. Histórico: ${hist}. Estrutura: 1)Resumo 2)KPIs 3)Atenção 4)Recomendações. Máx 500 palavras.`);
+        this.prog(70,'Montando PDF...');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit:'mm', format:'a4' });
+        const W = doc.internal.pageSize.getWidth(), M = 14;
+        doc.setFillColor(0,87,183); doc.rect(0,0,W,28,'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(16); doc.setFont(undefined,'bold');
+        doc.text('Relatório de Nível de Serviço — Rodobras', M, 13);
+        doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, M, 22);
+        let y=36; doc.setTextColor(15,27,45); doc.setFontSize(13); doc.setFont(undefined,'bold'); doc.text('KPIs Principais', M, y); y+=6;
+        doc.setFontSize(10); doc.setFont(undefined,'normal');
+        doc.text(`NS: ${kpis.ns} | Total: ${kpis.total}`, M, y); y+=6;
+        doc.text(`Atrasadas: ${kpis.atrasado} | Em Aberto: ${kpis.aberto}`, M, y); y+=6;
+        doc.text(`Mobile: ${kpis.mobile} | CWB/JOI/POA: ${kpis.cwb}/${kpis.joi}/${kpis.poa}`, M, y); y+=10;
+        doc.setDrawColor(227,234,243); doc.line(M,y,W-M,y); y+=6;
+        doc.setFontSize(13); doc.setFont(undefined,'bold'); doc.text('Análise Executiva (IA)', M, y); y+=6;
+        doc.setFontSize(9); doc.setFont(undefined,'normal');
+        doc.splitTextToSize(analise.replace(/\*\*/g,''), W-M*2).forEach(l => { if(y>278){doc.addPage();y=14;} doc.text(l,M,y); y+=4.5; });
+        const total = doc.internal.getNumberOfPages();
+        for (let p=1;p<=total;p++) { doc.setPage(p); doc.setFillColor(0,87,183); doc.rect(0,285,W,12,'F'); doc.setTextColor(255,255,255); doc.setFontSize(8); doc.text('Rodobras — Dashboard NS',M,292); doc.text(`Pág. ${p}/${total}`,W-M-18,292); }
+        this.prog(95,'Salvando...'); doc.save(`relatorio-rodobras-${new Date().toISOString().slice(0,10)}.pdf`);
+        this.prog(100,'✅ PDF gerado!');
+        setTimeout(()=>{ document.getElementById('pdf-modal-bk')?.classList.remove('show'); if(btn)btn.disabled=false; },1500);
+      } catch(err) { this.prog(0,`❌ Erro: ${err.message}`); if(btn)btn.disabled=false; }
     }
-    document.getElementById('drill-tit').textContent = titulo;
-    document.getElementById('drill-info').textContent = `${dados.length.toLocaleString('pt-BR')} registros (exibindo até 500)`;
-    document.getElementById('drill-th').innerHTML = `<tr>${colunas.map(c=>`<th>${c.label}</th>`).join('')}</tr>`;
-    document.getElementById('drill-tb').innerHTML = dados.slice(0,500).map(r=>`<tr>${colunas.map(c=>`<td>${r[c.key]??'—'}</td>`).join('')}</tr>`).join('');
-    m.classList.add('show');
-  },
-  exportCSV() {
-    if (!this._dados.length) return;
-    const cols = Object.keys(this._dados[0]);
-    const csv = [cols.join(';'), ...this._dados.map(r=>cols.map(c=>`"${(r[c]??'').toString().replace(/"/g,'""')}"`).join(';'))].join('\n');
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-    a.download = `${this._titulo.replace(/\s+/g,'-')}.csv`; a.click();
-  },
-  iaAnalisar() {
-    const prompt = `Analise ${this._dados.length} registros de "${this._titulo}". Padrões, anomalias e recomendações:\n${JSON.stringify(this._dados.slice(0,40),null,2).slice(0,1800)}`;
-    document.getElementById('drill-modal-bk')?.classList.remove('show');
-    const p = document.getElementById('ia-panel'); if (p && !p.classList.contains('open')) p.classList.add('open');
-    setTimeout(() => enviar(prompt), 300);
-  },
-  abrirUnidade(sigla) {
-    if (typeof getDados !== 'function') { alert('Função getDados não encontrada.'); return; }
-    const rows = getDados(), agr = typeof calcularAgregacoes==='function' ? calcularAgregacoes() : null;
-    if (!rows.length || !agr) { alert('Importe os dados primeiro.'); return; }
-    const { colUni, colCli, colSit } = agr.colunasDetectadas;
-    const filtrados = rows.filter(r => (r[colUni]||'').toString().toUpperCase().trim() === sigla.toUpperCase());
-    this.abrir(`Entregas — ${sigla} (${filtrados.length.toLocaleString('pt-BR')})`, filtrados, [{key:colUni,label:'Unidade'},{key:colCli,label:'Cliente'},{key:colSit,label:'Situação'}]);
-  }
-};
+  };
 
-// ═══ 8) GOVERNANÇA E AUDITORIA ═══
-window.RodoGov = {
-  CHAVE:'rodo_audit', MAX:200,
-  reg(acao, extra={}) {
-    const usr = localStorage.getItem('rodo_usuario_atual')||'?';
-    const tela = document.querySelector('.screen.active')?.id||'?';
-    try { const log = JSON.parse(localStorage.getItem(this.CHAVE)||'[]'); log.push({ts:new Date().toISOString(),usr,acao,tela,...extra}); if(log.length>this.MAX)log.splice(0,log.length-this.MAX); localStorage.setItem(this.CHAVE,JSON.stringify(log)); } catch(e){}
-  },
-  log() { try { return JSON.parse(localStorage.getItem(this.CHAVE)||'[]'); } catch(e){return[];} },
-  verLog() {
-    const entries = this.log().reverse().slice(0,80);
-    const m = document.createElement('div');
-    m.style.cssText='position:fixed;inset:0;background:rgba(15,27,45,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    m.innerHTML=`<div style="background:#fff;border-radius:14px;width:min(800px,95vw);max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="background:linear-gradient(135deg,#0057B7,#003a7a);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <h3 style="margin:0">🔐 Trilha de Auditoria</h3>
-        <button onclick="this.closest('[style]').remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer">✕</button>
-      </div>
-      <div style="overflow:auto;padding:12px"><table style="width:100%;font-size:12px;border-collapse:collapse">
-        <thead><tr style="background:#f1f5f9"><th style="padding:8px;text-align:left">Data/Hora</th><th style="padding:8px;text-align:left">Usuário</th><th style="padding:8px;text-align:left">Ação</th><th style="padding:8px;text-align:left">Tela</th></tr></thead>
-        <tbody>${entries.map(e=>`<tr><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0">${new Date(e.ts).toLocaleString('pt-BR')}</td><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0;font-weight:600">${e.usr}</td><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0">${e.acao}</td><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0">${e.tela}</td></tr>`).join('')}</tbody>
-      </table></div></div>`;
-    document.body.appendChild(m);
-  },
-  watchdog(min=30) {
-    let t; const reset=()=>{ clearTimeout(t); t=setTimeout(()=>{ this.reg('AUTO_LOGOUT',{motivo:`Inatividade ${min}min`}); document.getElementById('btnLogout')?.click(); },min*60000); };
-    ['mousemove','keydown','click','scroll'].forEach(ev=>document.addEventListener(ev,reset,{passive:true})); reset();
-  }
-};
+  // ═══ 7) DRILL-DOWN COM EXPORTAÇÃO ═══
+  window.RodoDrillDown = {
+    _dados:[], _titulo:'',
+    abrir(titulo, dados, colunas) {
+      this._dados=dados; this._titulo=titulo;
+      let m = document.getElementById('drill-modal-bk');
+      if (!m) {
+        m = document.createElement('div'); m.id='drill-modal-bk'; m.className='drill-modal-backdrop';
+        m.innerHTML = `<div class="drill-modal">
+          <div class="drill-modal-header"><h3 id="drill-tit" style="margin:0;font-size:15px;"></h3>
+            <div style="display:flex;gap:8px">
+              <button onclick="window.RodoDrillDown.exportCSV()" style="background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700">📥 CSV</button>
+              <button onclick="window.RodoDrillDown.iaAnalisar()" style="background:#FFB400;color:#000;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700">🤖 IA</button>
+              <button onclick="document.getElementById('drill-modal-bk').classList.remove('show')" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer">✕</button>
+            </div></div>
+          <div style="padding:10px 16px;font-size:12px;color:#64748b" id="drill-info"></div>
+          <div style="flex:1;overflow:auto;padding:0 16px 16px"><table class="drill-table"><thead id="drill-th"></thead><tbody id="drill-tb"></tbody></table></div>
+        </div>`;
+        document.body.appendChild(m);
+      }
+      document.getElementById('drill-tit').textContent = titulo;
+      document.getElementById('drill-info').textContent = `${dados.length.toLocaleString('pt-BR')} registros (exibindo até 500)`;
+      document.getElementById('drill-th').innerHTML = `<tr>${colunas.map(c=>`<th>${c.label}</th>`).join('')}</tr>`;
+      document.getElementById('drill-tb').innerHTML = dados.slice(0,500).map(r=>`<tr>${colunas.map(c=>`<td>${r[c.key]??'—'}</td>`).join('')}</tr>`).join('');
+      m.classList.add('show');
+    },
+    exportCSV() {
+      if (!this._dados.length) return;
+      const cols = Object.keys(this._dados[0]);
+      const csv = [cols.join(';'), ...this._dados.map(r=>cols.map(c=>`"${(r[c]??'').toString().replace(/"/g,'""')}"`).join(';'))].join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+      a.download = `${this._titulo.replace(/\s+/g,'-')}.csv`; a.click();
+    },
+    iaAnalisar() {
+      const prompt = `Analise ${this._dados.length} registros de "${this._titulo}". Padrões, anomalias e recomendações:\n${JSON.stringify(this._dados.slice(0,40),null,2).slice(0,1800)}`;
+      document.getElementById('drill-modal-bk')?.classList.remove('show');
+      const p = document.getElementById('ia-panel'); if (p && !p.classList.contains('open')) p.classList.add('open');
+      setTimeout(() => enviar(prompt), 300);
+    },
+    abrirUnidade(sigla) {
+      if (typeof getDados !== 'function') { alert('Função getDados não encontrada.'); return; }
+      const rows = getDados(), agr = typeof calcularAgregacoes==='function' ? calcularAgregacoes() : null;
+      if (!rows.length || !agr) { alert('Importe os dados primeiro.'); return; }
+      const { colUni, colCli, colSit } = agr.colunasDetectadas;
+      const filtrados = rows.filter(r => (r[colUni]||'').toString().toUpperCase().trim() === sigla.toUpperCase());
+      this.abrir(`Entregas — ${sigla} (${filtrados.length.toLocaleString('pt-BR')})`, filtrados, [{key:colUni,label:'Unidade'},{key:colCli,label:'Cliente'},{key:colSit,label:'Situação'}]);
+    }
+  };
+
+  // ═══ 8) GOVERNANÇA E AUDITORIA ═══
+  window.RodoGov = {
+    CHAVE:'rodo_audit', MAX:200,
+    reg(acao, extra={}) {
+      const usr = localStorage.getItem('rodo_usuario_atual')||'?';
+      const tela = document.querySelector('.screen.active')?.id||'?';
+      try { const log = JSON.parse(localStorage.getItem(this.CHAVE)||'[]'); log.push({ts:new Date().toISOString(),usr,acao,tela,...extra}); if(log.length>this.MAX)log.splice(0,log.length-this.MAX); localStorage.setItem(this.CHAVE,JSON.stringify(log)); } catch(e){}
+    },
+    log() { try { return JSON.parse(localStorage.getItem(this.CHAVE)||'[]'); } catch(e){return[];} },
+    verLog() {
+      // v49.26: remove instância anterior (evita modais empilhados)
+      document.getElementById('audit-modal-bk')?.remove();
+      const entries = this.log().reverse().slice(0,80);
+      const m = document.createElement('div');
+      m.id = 'audit-modal-bk'; // v49.26: id próprio p/ o botão ✕ fechar o modal INTEIRO
+      m.style.cssText='position:fixed;inset:0;background:rgba(15,27,45,.7);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      // v49.26: clique no fundo escuro também fecha
+      m.addEventListener('click', (ev)=>{ if(ev.target === m) m.remove(); });
+      m.innerHTML=`<div style="background:#fff;border-radius:14px;width:min(800px,95vw);max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="background:linear-gradient(135deg,#0057B7,#003a7a);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0">🔐 Trilha de Auditoria</h3>
+          <button onclick="document.getElementById('audit-modal-bk')?.remove()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer">✕</button>
+        </div>
+        <div style="overflow:auto;padding:12px"><table style="width:100%;font-size:12px;border-collapse:collapse">
+          <thead><tr style="background:#f1f5f9"><th style="padding:8px;text-align:left">Data/Hora</th><th style="padding:8px;text-align:left">Usuário</th><th style="padding:8px;text-align:left">Ação</th><th style="padding:8px;text-align:left">Tela</th></tr></thead>
+          <tbody>${entries.map(e=>`<tr><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0">${new Date(e.ts).toLocaleString('pt-BR')}</td><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0;font-weight:600">${e.usr}</td><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0">${e.acao}</td><td style="padding:7px 8px;border-bottom:1px solid #e2e8f0">${e.tela}</td></tr>`).join('')}</tbody>
+        </table></div></div>`;
+      document.body.appendChild(m);
+    },
+    watchdog(min=30) {
+      let t; const reset=()=>{ clearTimeout(t); t=setTimeout(()=>{ this.reg('AUTO_LOGOUT',{motivo:`Inatividade ${min}min`}); document.getElementById('btnLogout')?.click(); },min*60000); };
+      ['mousemove','keydown','click','scroll'].forEach(ev=>document.addEventListener(ev,reset,{passive:true})); reset();
+    }
+  };
 
   let historico = [];
   // ── ACESSO AO DATASET COMPLETO (relatório sem filtro) ───────────
@@ -13995,12 +13967,12 @@ ${especificos && especificos.totalEncontrado > 0
 
   async function enviar(texto){
     if (!texto.trim()) return;
-  const _filtrosAplicados = window.RodoNL2Filtros?.processar(texto);
-  if (_filtrosAplicados && _filtrosAplicados.length) {
-    addMsg('ai', `🎯 Filtros aplicados automaticamente: **${_filtrosAplicados.join(', ')}**`);
-    await new Promise(r => setTimeout(r, 600));
-  }
-
+    // v49.25: linguagem natural -> aplica filtros da tela automaticamente
+    const _filtrosAplicados = window.RodoNL2Filtros?.processar(texto);
+    if (_filtrosAplicados && _filtrosAplicados.length) {
+      addMsg('ai', `🎯 Filtros aplicados automaticamente: **${_filtrosAplicados.join(', ')}**`);
+      await new Promise(r => setTimeout(r, 600));
+    }
     const input = document.getElementById('ia-input'), btn = document.getElementById('ia-send-btn');
     addMsg('user', texto); input.value=''; input.disabled = true; btn.disabled = true;
     addMsg('ai', '', true);
@@ -14015,76 +13987,78 @@ ${especificos && especificos.totalEncontrado > 0
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-  // ═══ Alerta de dados mais novos disponíveis ═══
-  (function() {
-    const CHAVE = 'rodo_ultima_data_arquivo';
-    function verificar() {
-      const srv = (typeof DATA_ARQUIVO_DADOS !== 'undefined') ? String(DATA_ARQUIVO_DADOS) : null;
-      if (!srv) return;
-      const local = localStorage.getItem(CHAVE);
-      if (local && local !== srv) mostrarBanner();
-      else if (!local) localStorage.setItem(CHAVE, srv);
-    }
-    function mostrarBanner() {
-      if (document.getElementById('rodo-banner-novos')) return;
-      const b = document.createElement('div'); b.id='rodo-banner-novos';
-      b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9998;background:linear-gradient(90deg,#0057B7,#003a7a);color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;';
-      b.innerHTML = `<span>📥 <b>Arquivo atualizado!</b> Uma versão mais recente está disponível.</span>
-        <div style="display:flex;gap:8px">
-          <button onclick="document.getElementById('importBtn').click();this.closest('#rodo-banner-novos').remove();" style="background:#FFB400;color:#000;border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;">Importar agora</button>
-          <button onclick="this.closest('#rodo-banner-novos').remove();" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;">✕</button>
-        </div>`;
-      document.body.insertBefore(b, document.body.firstChild);
-    }
-    window.rodoMarcarImportacaoConcluida = function() {
-      const srv = (typeof DATA_ARQUIVO_DADOS !== 'undefined') ? String(DATA_ARQUIVO_DADOS) : new Date().toISOString();
-      localStorage.setItem(CHAVE, srv);
-      document.getElementById('rodo-banner-novos')?.remove();
-    };
-    verificar(); setInterval(verificar, 10*60*1000);
-  })();
+    // v49.25 — Inicializadores extras
 
-  // ═══ IA proativa: análise automática ao mudar filtro ═══
-  (function() {
-    const IDS = ['fUnidade','fCliente','fUf','fMes','fAno'];
-    let timer=null, ultimo='';
-    function disparar() {
-      const ctx = IDS.map(id=>{const e=document.getElementById(id);return e?`${id}=${e.value||'*'}`:'';}).join('|');
-      if (ctx===ultimo) return; ultimo=ctx;
-      const painel = document.getElementById('ia-panel');
-      if (!painel?.classList.contains('open')) return;
-      clearTimeout(timer);
-      timer = setTimeout(async () => {
-        const ativos = IDS.map(id=>{const e=document.getElementById(id);return e?.value?`${id.replace('f','')}=${e.value}`:null;}).filter(Boolean).join(', ');
-        if (!ativos) return;
-        addMsg('ai', `🔄 Filtros alterados: **${ativos}** — analisando...`);
-        addMsg('ai', '', true);
-        try {
-          const r = await chamarGemini(`Filtros ativos: ${ativos}. Analise em 3-4 linhas o NS atual vs meta 97%.`);
-          document.getElementById('ia-typing')?.remove(); addMsg('ai', `💡 **Auto-análise:**\n${r}`);
-        } catch(e) { document.getElementById('ia-typing')?.remove(); }
-      }, 2500);
-    }
-    IDS.forEach(id => document.getElementById(id)?.addEventListener('change', disparar));
-  })();
+    // ═══ Alerta de dados mais novos disponíveis ═══
+    (function() {
+      const CHAVE = 'rodo_ultima_data_arquivo';
+      function verificar() {
+        const srv = (typeof DATA_ARQUIVO_DADOS !== 'undefined') ? String(DATA_ARQUIVO_DADOS) : null;
+        if (!srv) return;
+        const local = localStorage.getItem(CHAVE);
+        if (local && local !== srv) mostrarBanner();
+        else if (!local) localStorage.setItem(CHAVE, srv);
+      }
+      function mostrarBanner() {
+        if (document.getElementById('rodo-banner-novos')) return;
+        const b = document.createElement('div'); b.id='rodo-banner-novos';
+        b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9998;background:linear-gradient(90deg,#0057B7,#003a7a);color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;';
+        b.innerHTML = `<span>📥 <b>Arquivo atualizado!</b> Uma versão mais recente está disponível.</span>
+          <div style="display:flex;gap:8px">
+            <button onclick="document.getElementById('importBtn').click();this.closest('#rodo-banner-novos').remove();" style="background:#FFB400;color:#000;border:none;border-radius:6px;padding:6px 14px;font-weight:700;cursor:pointer;">Importar agora</button>
+            <button onclick="this.closest('#rodo-banner-novos').remove();" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;">✕</button>
+          </div>`;
+        document.body.insertBefore(b, document.body.firstChild);
+      }
+      window.rodoMarcarImportacaoConcluida = function() {
+        const srv = (typeof DATA_ARQUIVO_DADOS !== 'undefined') ? String(DATA_ARQUIVO_DADOS) : new Date().toISOString();
+        localStorage.setItem(CHAVE, srv);
+        document.getElementById('rodo-banner-novos')?.remove();
+      };
+      verificar(); setInterval(verificar, 10*60*1000);
+    })();
 
-  // ═══ Injeta explicabilidade, ícones de gráfico, drill-down e governança ═══
-  setTimeout(() => {
-    window.RodoExplicabilidade?.injetar();
-    window.RodoPainelIA?.injetar();
-    ['topCtrcAberto','topCtrcEntregue'].forEach(listId => {
-      document.getElementById(listId)?.querySelectorAll('li').forEach(li => {
-        const lbl = li.querySelector('.label'); if (!lbl) return;
-        li.style.cursor='pointer'; li.title='Clique para ver detalhes';
-        li.addEventListener('click', () => window.RodoDrillDown?.abrirUnidade(lbl.getAttribute('title')||lbl.textContent.trim()));
+    // ═══ IA proativa: análise automática ao mudar filtro ═══
+    (function() {
+      const IDS = ['fUnidade','fCliente','fUf','fMes','fAno'];
+      let timer=null, ultimo='';
+      function disparar() {
+        const ctx = IDS.map(id=>{const e=document.getElementById(id);return e?`${id}=${e.value||'*'}`:'';}).join('|');
+        if (ctx===ultimo) return; ultimo=ctx;
+        const painel = document.getElementById('ia-panel');
+        if (!painel?.classList.contains('open')) return;
+        clearTimeout(timer);
+        timer = setTimeout(async () => {
+          const ativos = IDS.map(id=>{const e=document.getElementById(id);return e?.value?`${id.replace('f','')}=${e.value}`:null;}).filter(Boolean).join(', ');
+          if (!ativos) return;
+          addMsg('ai', `🔄 Filtros alterados: **${ativos}** — analisando...`);
+          addMsg('ai', '', true);
+          try {
+            const r = await chamarGemini(`Filtros ativos: ${ativos}. Analise em 3-4 linhas o NS atual vs meta 97%.`);
+            document.getElementById('ia-typing')?.remove(); addMsg('ai', `💡 **Auto-análise:**\n${r}`);
+          } catch(e) { document.getElementById('ia-typing')?.remove(); }
+        }, 2500);
+      }
+      IDS.forEach(id => document.getElementById(id)?.addEventListener('change', disparar));
+    })();
+
+    // ═══ Injeta explicabilidade, ícones de gráfico, drill-down e governança ═══
+    setTimeout(() => {
+      window.RodoExplicabilidade?.injetar();
+      window.RodoPainelIA?.injetar();
+      ['topCtrcAberto','topCtrcEntregue'].forEach(listId => {
+        document.getElementById(listId)?.querySelectorAll('li').forEach(li => {
+          const lbl = li.querySelector('.label'); if (!lbl) return;
+          li.style.cursor='pointer'; li.title='Clique para ver detalhes';
+          li.addEventListener('click', () => window.RodoDrillDown?.abrirUnidade(lbl.getAttribute('title')||lbl.textContent.trim()));
+        });
       });
-    });
-  }, 2000);
+    }, 2000);
 
-  window.RodoGov?.watchdog(30);
-  document.querySelectorAll('.nav-item[data-screen]').forEach(el => el.addEventListener('click', () => window.RodoGov?.reg('NAVEGAR',{destino:el.dataset.screen})));
-  document.getElementById('exportBtn')?.addEventListener('click', () => window.RodoGov?.reg('EXPORTAR'));
-  document.getElementById('importBtn')?.addEventListener('click', () => window.RodoGov?.reg('IMPORTAR'));
+    window.RodoGov?.watchdog(30);
+    document.querySelectorAll('.nav-item[data-screen]').forEach(el => el.addEventListener('click', () => window.RodoGov?.reg('NAVEGAR',{destino:el.dataset.screen})));
+    document.getElementById('exportBtn')?.addEventListener('click', () => window.RodoGov?.reg('EXPORTAR'));
+    document.getElementById('importBtn')?.addEventListener('click', () => window.RodoGov?.reg('IMPORTAR'));
 
     const fab=document.getElementById('ia-fab'), panel=document.getElementById('ia-panel');
     fab.addEventListener('click', () => panel.classList.toggle('open'));
@@ -14097,4 +14071,5 @@ ${especificos && especificos.totalEncontrado > 0
 </script>
 
 
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body></html>
