@@ -1812,7 +1812,27 @@ body.dark #ia-messages::-webkit-scrollbar-thumb{ background:rgba(127,179,255,.25
   </div>
   <div class="top-actions">
     <span class="status-pill" id="recCount" title="Total de registros e data/hora da última importação"><span class="dot"></span> 446.002 registros</span>
-    <input type="file" id="fileInput" 
+    <input type="file" id="fileInput" window.RodoWorker = {
+  _worker: null,
+  iniciar(buffer, nomeArquivo, onProgresso, onConcluido, onErro) {
+    if (this._worker) this._worker.terminate();
+    if (typeof Worker === 'undefined') { onErro('Web Workers não suportados. Usando modo padrão.'); return false; }
+    try { this._worker = new Worker('rodo-worker.js'); }
+    catch(e) { onErro('Não foi possível iniciar o Worker (hospedagem via file:// não suporta). Usando modo padrão.'); return false; }
+
+    this._worker.onmessage = (e) => {
+      const { tipo, msg, pct, rows, compressed, agg, totalRegistros } = e.data;
+      if (tipo === 'PROGRESSO') onProgresso(msg, pct);
+      if (tipo === 'CONCLUIDO') { this._worker.terminate(); onConcluido({ rows, compressed, agg, totalRegistros }); }
+      if (tipo === 'ERRO')      { this._worker.terminate(); onErro(msg); }
+    };
+    this._worker.onerror = (e) => { this._worker.terminate(); onErro(e.message); };
+    this._worker.postMessage({ tipo: 'PROCESSAR_PLANILHA', payload: { buffer, nomeArquivo } }, [buffer]);
+    return true;
+  },
+  cancelar() { if (this._worker) { this._worker.terminate(); this._worker = null; } }
+};
+
  accept=".xlsb,.xlsx,.xls,.json,application/json" style="display:none">
 
 <button class="btn ghost" onclick="window.RodoPDF?.gerar()" title="Gerar relatório PDF com análise de IA">📄 PDF IA</button>
@@ -13324,7 +13344,7 @@ window.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
   // ⚠️ COLE SUA CHAVE AQUI
-  const GEMINI_API_KEY = "AQ.Ab8RN6KHReA6uyCCjnt81NneqjT-ZBP3OIuFYPWcU1ODKqfcFQ";
+  const GEMINI_API_KEY = "AQ.Ab8RN6JcmF6QtJOvIo7ZN6VxxhdIWft4-8sGvkbsQxQbTkpNbA";
 
   // Modelos em ordem de preferência — se o primeiro falhar, tenta o próximo
   const MODELOS_CANDIDATOS = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
